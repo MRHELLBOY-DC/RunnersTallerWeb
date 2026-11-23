@@ -33,5 +33,5 @@ jobs:
             --output "$RUNNER_TEMP/nginx.html" \
             --write-out '%{http_code}' http://127.0.0.1/)
           test "$status" = 200
-          grep -qi 'Welcome to nginx' "$RUNNER_TEMP/nginx.html"
-          printf 'Nginx responde HTTP %s y muestra la pagina de bienvenida.\n' "$status"
+          grep -qi '<html' "$RUNNER_TEMP/nginx.html"
+          printf 'Nginx responde HTTP %s y sirve una pagina HTML.\n' "$status"

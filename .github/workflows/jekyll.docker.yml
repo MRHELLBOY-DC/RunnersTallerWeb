@@ -1,0 +1,40 @@
+name: Mi Servidor
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: despliegue-nginx
+  cancel-in-progress: false
+
+jobs:
+  despliegue:
+    runs-on: self-hosted
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Copiar mis archivos al contenedor
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f ./index.html
+          test "$(readlink -f /var/www/html)" = /var/www/html
+          rm -rf -- /var/www/html/*
+          cp -R -- ./* /var/www/html/
+
+      - name: Comprobar el despliegue
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 15 \
+            http://127.0.0.1/ --output "$RUNNER_TEMP/pagina-publicada.html"
+          cmp ./index.html "$RUNNER_TEMP/pagina-publicada.html"
+          echo 'Pagina publicada correctamente en Nginx.'
