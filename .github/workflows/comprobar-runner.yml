@@ -1,0 +1,37 @@
+name: Comprobar runner y Nginx
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  comprobar:
+    name: Comprobar Ubuntu y Nginx
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 5
+    steps:
+      - name: Verificar el entorno del runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = Linux
+          test "$(uname -m)" = x86_64
+          test "$(id -un)" = ubuntu
+          printf 'Runner: %s\n' "$RUNNER_NAME"
+          uname -a
+          id
+
+      - name: Comprobar que Nginx responde
+        shell: bash
+        run: |
+          set -euo pipefail
+          nginx -v
+          status=$(curl --silent --show-error --fail --max-time 15 \
+            --output "$RUNNER_TEMP/nginx.html" \
+            --write-out '%{http_code}' http://127.0.0.1/)
+          test "$status" = 200
+          grep -qi 'Welcome to nginx' "$RUNNER_TEMP/nginx.html"
+          printf 'Nginx responde HTTP %s y muestra la pagina de bienvenida.\n' "$status"
