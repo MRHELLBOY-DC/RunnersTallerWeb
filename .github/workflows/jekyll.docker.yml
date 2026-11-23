@@ -21,6 +21,17 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Preparar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar pruebas unitarias
+        run: npm test
+
       - name: Copiar mis archivos al contenedor
         shell: bash
         run: |
@@ -28,7 +39,7 @@ jobs:
           test -f ./index.html
           test "$(readlink -f /var/www/html)" = /var/www/html
           rm -rf -- /var/www/html/*
-          cp -R -- ./* /var/www/html/
+          cp -- ./index.html /var/www/html/
 
       - name: Comprobar el despliegue
         shell: bash
